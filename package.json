@@ -3,6 +3,15 @@
   "version": "0.1.0",
   "main": "index.js",
   "license": "MIT",
+  "author": "João Neto <joaopintoneto@gmail.com>",
+  "description": "Proxy all http traffic from local to external server",
+  "keywords": [
+    "proxy",
+    "cors",
+    "http",
+    "development",
+    "server"
+  ],
   "bin": {
     "proxi3": "./index.js"
   },
@@ -10,5 +19,8 @@
     "commander": "^2.12.1",
     "express": "^4.16.2",
     "request": "^2.83.0"
+  },
+  "engines": {
+    "node": ">=6.0.0"
   }
 }
