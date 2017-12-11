@@ -15,6 +15,7 @@ program
     proxyApiUrl = argProxyApiUrl.replace(/\/$/, '');
   })
   .option('-p, --port [port]', 'specify proxi3 port', 3000)
+  .option('-P, --http_proxy [http_proxy]', 'specify proxy', process.env.http_proxy)
   .option('-H, --host [host]', 'specify proxi3 host', '0.0.0.0')
   .option('-c, --config <config>', 'specify proxi3.config.json path')
   .parse(process.argv);
@@ -35,6 +36,10 @@ try {
     console.error(`  proxi3 reading config file error: ${proxi3ConfigPath}`);
     process.exit(1);
   }
+}
+
+if (program.http_proxy) {
+  proxi3Config.http_proxy = program.http_proxy;
 }
 
 const app = require('./app')({ proxyApiUrl, proxi3Config });

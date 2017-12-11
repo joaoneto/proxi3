@@ -3,13 +3,13 @@ const request = require('request');
 const cors = require('./middleware/cors');
 const hooks = require('./middleware/hooks');
 
-let $request = request.defaults({});
-if (process.env.http_proxy) {
-  $request = request.defaults({ proxy: process.env.http_proxy });
-}
-
 module.exports = (config) => {
   const { proxyApiUrl, proxi3Config } = config;
+
+  let $request = request.defaults({});
+  if (proxi3Config.http_proxy) {
+    $request = request.defaults({ proxy: proxi3Config.http_proxy });
+  }
 
   app.use(cors());
   app.use(hooks(proxi3Config.hooks));
