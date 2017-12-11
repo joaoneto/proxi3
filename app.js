@@ -1,6 +1,7 @@
 const app = require('express')();
 const request = require('request');
 const cors = require('./middleware/cors');
+const hooks = require('./middleware/hooks');
 
 let $request = request.defaults({});
 if (process.env.http_proxy) {
@@ -11,6 +12,7 @@ module.exports = (config) => {
   const { proxyApiUrl, proxi3Config } = config;
 
   app.use(cors());
+  app.use(hooks(proxi3Config.hooks));
 
   app.use('*', (req, res, next) => {
     const originalOrigin = req.headers.origin;
