@@ -12,6 +12,7 @@ npm install -g proxi3
 A *proxi3.config.json* can be created in root project and proxi3 will read de config and starts with this configuration.
 
 - **headers**: Overrides the original request headers, to pass to server request.
+- **hooks**: Overrides the original request, with custom response and status code.
 
 ### proxi3.config.json example:
 ```json
@@ -20,7 +21,17 @@ A *proxi3.config.json* can be created in root project and proxi3 will read de co
     "host": false,
     "origin": "https://MY-ORIGIN/",
     "user-agent": "MY-USER-AGENT"
-  }
+  },
+  "hooks": [
+    {
+      "method": "post",
+      "path": "/\\D{2}/user.*",
+      "response": {
+        "status": 500,
+        "data": ""
+      }
+    }
+  ]
 }
 ```
 
@@ -36,9 +47,10 @@ proxi3 http://example.com/ --config ~/proxi3.config.json
 
 ### Options:
 ```
-  -V, --version          output the version number
-  -p, --port [port]      specify proxi3 port (default: 3000)
-  -H, --host [host]      specify proxi3 host (default: 0.0.0.0)
-  -c, --config <config>  specify proxi3.config.json path
-  -h, --help             output usage information
+  -V, --version                  output the version number
+  -p, --port [port]              specify proxi3 port (default: 3000)
+  -P, --http_proxy [http_proxy]  specify proxy
+  -H, --host [host]              specify proxi3 host (default: 0.0.0.0)
+  -c, --config <config>          specify proxi3.config.json path
+  -h, --help                     output usage information
 ```
