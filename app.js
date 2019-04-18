@@ -12,7 +12,7 @@ const handleResponse = (error, _response, responseBody, requestBody) => {
 
   const responseJson = _response.toJSON();
   const { request, ...response } = responseJson;
-
+  
   logging.emit('logging', {
     request: {
       body: requestBody,
@@ -27,6 +27,46 @@ const handleResponse = (error, _response, responseBody, requestBody) => {
       body: responseBody,
       headers: response.headers,
     }
+  });
+};
+
+const requestBody = (request) => {
+  return new Promise((resolve, reject) => {
+    let requestBody = [];
+    request.on('data', (chunk) => {
+      requestBody.push(chunk);
+    });
+    request.on('error', (error) => {
+      handleResponse(error);
+    });
+    request.on('end', () => {
+      requestBody = Buffer.concat(requestBody).toString();
+      resolve(requestBody);
+    });
+  });
+};
+
+const responseBody = (response) => {
+  return new Promise((resolve, reject) => {
+    let responseBody = [];
+    let output;
+    if (response.headers['content-encoding'] == 'gzip') {
+      const gzip = zlib.createGunzip();
+      response.pipe(gzip);
+      output = gzip;
+    } else {
+      output = response;
+    }
+    output.on('data', (chunk) => {
+      responseBody.push(chunk);
+    });
+    output.on('error', (error) => {
+      handleResponse(error);
+    });
+    output.on('end', () => {
+      responseBody = Buffer.concat(responseBody).toString();
+      resolve(responseBody);
+    });
   });
 };
 
@@ -51,14 +91,8 @@ module.exports = (config) => {
 
     console.log(`[${(new Date()).toISOString()}] [${req.method}] ${proxyApiUrl}${req.originalUrl}`);
 
-    // promisefy this
-    let requestBody = [];
-    req.on('data', (chunk) => {
-      requestBody.push(chunk);
-    })
-    .on('end', () => {
-      requestBody = Buffer.concat(requestBody).toString();
-    });
+    // concat request body payload stream
+    const requestBodyPromise = requestBody(req);
 
     req.pipe($request({
       encoding: null,
@@ -74,23 +108,19 @@ module.exports = (config) => {
 
       res.writeHead(response.statusCode, headers);
 
-      let responseBody = [];
-      let output;
-      if (response.headers['content-encoding'] == 'gzip') {
-        const gzip = zlib.createGunzip();
-        response.pipe(gzip);
-        output = gzip;
-      } else {
-        output = response;
-      }
+      // concat response body payload stream
+      const responseBodyPromise = responseBody(response);
 
-      output.on('data', (chunk) => {
-        responseBody.push(chunk);
-      })
-
-      output.on('end', () => {
-        responseBody = Buffer.concat(responseBody).toString();
+      // resolve request and response concat body promises
+      Promise.all([
+        requestBodyPromise,
+        responseBodyPromise
+      ])
+      .then(([requestBody, responseBody]) => {
         handleResponse(false, response, responseBody, requestBody);
+      })
+      .catch((error) => {
+        handleResponse(error);
       });
     }).pipe(res);
   });
