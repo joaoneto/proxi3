@@ -12,8 +12,9 @@ const handleResponse = (error, _response, responseBody, requestBody) => {
 
   const responseJson = _response.toJSON();
   const { request, ...response } = responseJson;
-  
-  logging.emit('logging', {
+
+  logging.emit('proxy3:request', {
+    date: new Date(response.headers.date),
     request: {
       body: requestBody,
       url: request.uri.href,
