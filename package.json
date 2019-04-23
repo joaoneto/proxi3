@@ -18,7 +18,7 @@
   "dependencies": {
     "commander": "^2.12.1",
     "express": "^4.16.2",
-    "request": "^2.83.0"
+    "request": "^2.88.0"
   },
   "engines": {
     "node": ">=6.0.0"
